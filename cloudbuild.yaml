@@ -1,0 +1,24 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "asia-south1-docker.pkg.dev/vishakha-403211/test-tf/test-tf"
+      - "--build-arg"
+      - "GIT_COMMIT=$(cat ./git_commit_sha.txt)"
+      - "-f"
+      - "Dockerfile"
+      - "."
+
+  # Push the container image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "asia-south1-docker.pkg.dev/vishakha-403211/test-tf/test-tf"
+
+# Options configuration at the root level
+options:
+  logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: "projects/vishakha-403211/locations/asia-south1/workerPools/test-tf"
