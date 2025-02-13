@@ -1,46 +1,42 @@
+# cloudbuild.yaml
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
     args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
 
-  # Add approval step
+  # Manual approval step
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'approval'
-    args:
-    - 'builds'
-    - 'submit'
-    - '--config=approval.yaml'
-    - '--async'
-    waitFor: ['-']  # Start immediately after previous step
-  
-  # Wait for approval
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'wait-for-approval'
-    args:
-    - 'alpha'
-    - 'builds'
-    - 'workflows'
-    - 'wait'
-    - '--target-id=${BUILD_ID}'
-    waitFor: ['approval']
+    script: |
+      echo "Waiting for approval..."
+      gcloud alpha builds triggers wait-approval "${BUILD_ID}" --region=asia-south1
   
   # Update the deployment after approval
   - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'deploy'
     args:
     - 'set'
     - 'image'
     - 'deployment/flask-app'
     - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
-    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'  # Replace with your cluster's zone
-    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'    # Replace with your cluster name
+    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'
+    - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
 
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
 
 options:
-  logging: CLOUD_LOGGING_ONLY 
+  logging: CLOUD_LOGGING_ONLY
+
+# Add approval configuration directly in cloudbuild.yaml
+approvalConfig:
+  approvalRequired: true
+  approvalType: MANUAL
