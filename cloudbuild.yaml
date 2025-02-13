@@ -1,39 +1,22 @@
 steps:
   # Build the container image
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "build"
-      - "-t"
-      - "asia-south1-docker.pkg.dev/vishakha-403211/test-tf/test-tf"
-      - "--build-arg"
-      - "GIT_COMMIT=$(cat ./git_commit_sha.txt)"
-      - "-f"
-      - "Dockerfile"
-      - "."
-
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
+  
   # Push the container image to Artifact Registry
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "push"
-      - "asia-south1-docker.pkg.dev/vishakha-403211/test-tf/test-tf"
-
-    - name: 'gcr.io/cloud-builders/kubectl'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
+  
+  # Update the deployment
+  - name: 'gcr.io/cloud-builders/kubectl'
     args:
     - 'set'
     - 'image'
     - 'deployment/flask-app'
-    - 'flask-app=gcr.io/$PROJECT_ID/flask-app:$COMMIT_SHA'
+    - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
-    - 'CLOUDSDK_COMPUTE_ZONE=${_COMPUTE_ZONE}'
-    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER_NAME}'
-    - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'  # Replace with your cluster's zone
+    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'    # Replace with your cluster name
 
-substitutions:
-  _COMPUTE_ZONE: asia-south1  # Replace with your cluster's zone
-  _CLUSTER_NAME: autopilot-cluster-1-test  # Replace with your cluster name
-
-# Options configuration at the root level
-options:
-  logging: CLOUD_LOGGING_ONLY
-  pool:
-    name: "projects/vishakha-403211/locations/asia-south1/workerPools/test-tf"
+images:
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
