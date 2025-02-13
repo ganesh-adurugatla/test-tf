@@ -16,11 +16,9 @@ steps:
     - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
     - 'CLOUDSDK_COMPUTE_ZONE=asia-south1-a'
-    - 'CLOUDSDK_CONTAINER_CLUSTER=test-tf'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test' 
     - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
-
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
-
 options:
-  logging: CLOUD_LOGGING_ONLY  # Added this option to fix the logging error
+  logging: CLOUD_LOGGING_ONLY
