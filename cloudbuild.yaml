@@ -17,6 +17,21 @@ steps:
       - "push"
       - "asia-south1-docker.pkg.dev/vishakha-403211/test-tf/test-tf"
 
+    - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+    - 'set'
+    - 'image'
+    - 'deployment/flask-app'
+    - 'flask-app=gcr.io/$PROJECT_ID/flask-app:$COMMIT_SHA'
+    env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_COMPUTE_ZONE}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER_NAME}'
+    - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+
+substitutions:
+  _COMPUTE_ZONE: asia-south1  # Replace with your cluster's zone
+  _CLUSTER_NAME: autopilot-cluster-1-test  # Replace with your cluster name
+
 # Options configuration at the root level
 options:
   logging: CLOUD_LOGGING_ONLY
