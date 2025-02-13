@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: your-registry/flask-app:latest
+        image: gcr.io/$PROJECT_ID/flask-app:latest 
         ports:
         - containerPort: 8080
