@@ -6,8 +6,29 @@ steps:
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
+
+  # Add approval step
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'approval'
+    args:
+    - 'builds'
+    - 'submit'
+    - '--config=approval.yaml'
+    - '--async'
+    waitFor: ['-']  # Start immediately after previous step
   
-  # Update the deployment
+  # Wait for approval
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'wait-for-approval'
+    args:
+    - 'alpha'
+    - 'builds'
+    - 'workflows'
+    - 'wait'
+    - '--target-id=${BUILD_ID}'
+    waitFor: ['approval']
+  
+  # Update the deployment after approval
   - name: 'gcr.io/cloud-builders/kubectl'
     args:
     - 'set'
