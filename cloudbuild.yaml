@@ -2,24 +2,36 @@ steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
-  
-  # Push the container image to Artifact Registry
+
+  # Push the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
-  
-  # Update the deployment
-  - name: 'gcr.io/cloud-builders/kubectl'
-    args:
-    - 'set'
-    - 'image'
-    - 'deployment/flask-app'
-    - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
+
+  # Initialize Terraform
+  - name: 'hashicorp/terraform:latest'
+    args: ['init']
     env:
-    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'  # Replace with your cluster's zone
-    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'    # Replace with your cluster name
+      - 'TF_VAR_project_id=$PROJECT_ID'
+
+  # Run Terraform plan
+  - name: 'hashicorp/terraform:latest'
+    args: [
+      'plan',
+      '-var', 'project_id=$PROJECT_ID',
+      '-var', 'region=asia-south1'
+    ]
+
+  # Apply Terraform changes
+  - name: 'hashicorp/terraform:latest'
+    args: [
+      'apply',
+      '-auto-approve',
+      '-var', 'project_id=$PROJECT_ID',
+      '-var', 'region=asia-south1'
+    ]
 
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
 
 options:
-  logging: CLOUD_LOGGING_ONLY 
+  logging: CLOUD_LOGGING_ONLY
