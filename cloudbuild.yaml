@@ -15,10 +15,11 @@ steps:
     - 'deployment/flask-app'
     - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
-    - 'CLOUDSDK_COMPUTE_REGION=asia-south1'  # Changed from ZONE to REGION
-    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'
-    - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
+    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'  # Replace with your cluster's zone
+    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'    # Replace with your cluster name
+
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
+
 options:
-  logging: CLOUD_LOGGING_ONLY
+  logging: CLOUD_LOGGING_ONLY 
