@@ -1,42 +1,26 @@
-# cloudbuild.yaml
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'build'
     args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'push'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
-
-  # Manual approval step
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'approval'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "Waiting for approval..."
-        gcloud builds triggers wait-approval $$BUILD_ID --region=asia-south1 --verbosity=debug
   
-  # Update the deployment after approval
+  # Update the deployment
   - name: 'gcr.io/cloud-builders/kubectl'
-    id: 'deploy'
     args:
     - 'set'
     - 'image'
     - 'deployment/flask-app'
     - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
-    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'
-    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'
+    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1-a'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=test-tf'
     - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
 
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
 
 options:
-  logging: CLOUD_LOGGING_ONLY
-
-# Note: The approval will be configured in the Cloud Build trigger settings, not here
+  logging: CLOUD_LOGGING_ONLY  # Added this option to fix the logging error
