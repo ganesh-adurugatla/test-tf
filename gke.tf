@@ -1,10 +1,16 @@
-resource "google_container_cluster" "primary" {
-  name     = "app-cluster"
+resource "google_container_cluster" "autopilot" {
+  name     = "autopilot-cluster-1-test"
   location = var.region
 
-  initial_node_count = 1
-  
-  node_config {
-    machine_type = "e2-medium"
+  # Enable Autopilot mode
+  enable_autopilot = true
+
+  # Required for Autopilot
+  release_channel {
+    channel = "REGULAR"
   }
+
+  # Network configuration if needed
+  network    = "default"
+  subnetwork = "default"
 }
