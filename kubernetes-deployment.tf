@@ -1,37 +1,36 @@
-resource "kubernetes_deployment" "app" {
+resource "kubernetes_deployment" "flask_app" {
   metadata {
-    name = "app-deployment"
+    name = "flask-app"
   }
 
   spec {
-    replicas = 3
-
     selector {
       match_labels = {
-        app = "my-app"
+        app = "flask-app"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "my-app"
+          app = "flask-app"
         }
       }
 
       spec {
         container {
-          image = "${google_artifact_registry_repository.app_repository.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app_repository.repository_id}/app:${var.image_tag}"
-          name  = "app"
+          name  = "flask-app"
+          image = "${var.region}-docker.pkg.dev/${var.project_id}/test-tf/flask-app:latest"
 
+          # Autopilot requires resource limits
           resources {
             limits = {
-              cpu    = "0.5"
-              memory = "512Mi"
+              cpu    = "1"
+              memory = "2Gi"
             }
             requests = {
-              cpu    = "250m"
-              memory = "256Mi"
+              cpu    = "500m"
+              memory = "1Gi"
             }
           }
         }
