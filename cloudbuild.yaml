@@ -2,9 +2,11 @@ steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
+  
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
+  
   # Update the deployment
   - name: 'gcr.io/cloud-builders/kubectl'
     args:
@@ -13,8 +15,8 @@ steps:
     - 'deployment/flask-app'
     - 'flask-app=asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
     env:
-    - 'CLOUDSDK_COMPUTE_ZONE=asia-south1'
-    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'  # Updated cluster name
+    - 'CLOUDSDK_COMPUTE_REGION=asia-south1'  # Changed from ZONE to REGION
+    - 'CLOUDSDK_CONTAINER_CLUSTER=autopilot-cluster-1-test'
     - 'CLOUDSDK_CORE_PROJECT=$PROJECT_ID'
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
