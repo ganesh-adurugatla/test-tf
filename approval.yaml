@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+    - 'alpha'
+    - 'builds'
+    - 'workflows'
+    - 'approve'
+    - '--target-id=${BUILD_ID}'
+    - '--approve-message=Deployment approved by user'
+
+approval_config:
+  approval_required: true
+  approval_type: MANUAL
