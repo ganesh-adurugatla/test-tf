@@ -13,9 +13,12 @@ steps:
   # Manual approval step
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'approval'
-    script: |
-      echo "Waiting for approval..."
-      gcloud alpha builds triggers wait-approval "${BUILD_ID}" --region=asia-south1
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Waiting for approval..."
+        gcloud builds triggers wait-approval $$BUILD_ID --region=asia-south1 --verbosity=debug
   
   # Update the deployment after approval
   - name: 'gcr.io/cloud-builders/kubectl'
@@ -36,7 +39,4 @@ images:
 options:
   logging: CLOUD_LOGGING_ONLY
 
-# Add approval configuration directly in cloudbuild.yaml
-approvalConfig:
-  approvalRequired: true
-  approvalType: MANUAL
+# Note: The approval will be configured in the Cloud Build trigger settings, not here
