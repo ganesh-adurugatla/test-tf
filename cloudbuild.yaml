@@ -9,25 +9,26 @@ steps:
 
   # Initialize Terraform
   - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
     args: ['init']
     env:
       - 'TF_VAR_project_id=$PROJECT_ID'
 
   # Run Terraform plan
   - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
     args: [
       'plan',
-      '-var', 'project_id=$PROJECT_ID',
-      '-var', 'region=asia-south1'
+      '-var', 'project_id=$PROJECT_ID'
     ]
 
   # Apply Terraform changes
   - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
     args: [
       'apply',
       '-auto-approve',
-      '-var', 'project_id=$PROJECT_ID',
-      '-var', 'region=asia-south1'
+      '-var', 'project_id=$PROJECT_ID'
     ]
 
 images:
