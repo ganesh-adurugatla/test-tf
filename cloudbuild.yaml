@@ -30,11 +30,18 @@ steps:
       '-var', 'project_id=$PROJECT_ID'
     ]
 
+  # Apply Terraform changes (without auto-approve)
+  - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
+    args: [
+      'apply',
+      '-var', 'project_id=$PROJECT_ID'
+    ]
+
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest'
 
-# Explicitly set logging to Cloud Logging
 options:
   logging: CLOUD_LOGGING_ONLY
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
