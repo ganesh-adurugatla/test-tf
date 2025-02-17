@@ -15,6 +15,21 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest']
 
+  # Initialize Terraform
+  - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
+    args: ['init']
+    env:
+      - 'TF_VAR_project_id=$PROJECT_ID'
+
+  # Run Terraform plan
+  - name: 'hashicorp/terraform:latest'
+    dir: 'terraform'
+    args: [
+      'plan',
+      '-var', 'project_id=$PROJECT_ID'
+    ]
+
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest'
