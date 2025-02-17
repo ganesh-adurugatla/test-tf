@@ -13,13 +13,15 @@ steps:
     args: ['init']
     env:
       - 'TF_VAR_project_id=$PROJECT_ID'
+      - 'TF_VAR_image_tag=$COMMIT_SHA'
 
   # Run Terraform plan
   - name: 'hashicorp/terraform:latest'
     dir: 'terraform'
     args: [
       'plan',
-      '-var', 'project_id=$PROJECT_ID'
+      '-var', 'project_id=$PROJECT_ID',
+      '-var', 'image_tag=$COMMIT_SHA'
     ]
 
   # Apply Terraform changes
@@ -28,7 +30,8 @@ steps:
     args: [
       'apply',
       '-auto-approve',
-      '-var', 'project_id=$PROJECT_ID'
+      '-var', 'project_id=$PROJECT_ID',
+      '-var', 'image_tag=$COMMIT_SHA'
     ]
 
 images:
