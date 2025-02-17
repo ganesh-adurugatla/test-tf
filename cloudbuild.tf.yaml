@@ -1,0 +1,43 @@
+# cloudbuild.tf.yaml
+steps:
+  # Initialize Terraform
+  - name: 'hashicorp/terraform:1.0.0'
+    args: ['init']
+    dir: 'terraform'
+
+  # Terraform plan
+  - name: 'hashicorp/terraform:1.0.0'
+    args: ['plan', '-out=tfplan']
+    dir: 'terraform'
+    env:
+      - 'TF_VAR_project_id=$PROJECT_ID'
+
+  # Terraform apply
+  - name: 'hashicorp/terraform:1.0.0'
+    args: ['apply', '-auto-approve', 'tfplan']
+    dir: 'terraform'
+
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
+
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
+
+  # Deploy to GKE
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+    - 'set'
+    - 'image'
+    - 'deployment/flask-app'
+    - 'flask-app=${_REGION}-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
+    env:
+    - 'CLOUDSDK_COMPUTE_ZONE=${_REGION}'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLUSTER}'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
