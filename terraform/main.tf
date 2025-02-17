@@ -13,12 +13,6 @@ terraform {
   }
 }
 
-# Add image_tag variable
-variable "image_tag" {
-  description = "The tag of the Docker image to deploy"
-  type        = string
-}
-
 # Deployment configuration
 resource "google_cloud_run_service" "flask_app" {
   project  = var.project_id
@@ -28,7 +22,7 @@ resource "google_cloud_run_service" "flask_app" {
   template {
     spec {
       containers {
-        image = "asia-south1-docker.pkg.dev/${var.project_id}/test-tf/flask-app:${var.image_tag}"
+        image = "asia-south1-docker.pkg.dev/${var.project_id}/test-tf/flask-app:latest"
       }
       service_account_name = "ganesh-test@vishakha-403211.iam.gserviceaccount.com"
     }
