@@ -1,11 +1,19 @@
 steps:
-  # Build the container image
+  # Build the container image with commit SHA
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA', '.']
 
-  # Push the container image
+  # Tag the image as latest
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 
+           'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA',
+           'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest']
+
+  # Push both tags
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest']
 
   # Initialize Terraform
   - name: 'hashicorp/terraform:latest'
@@ -13,15 +21,13 @@ steps:
     args: ['init']
     env:
       - 'TF_VAR_project_id=$PROJECT_ID'
-      - 'TF_VAR_image_tag=$COMMIT_SHA'
 
   # Run Terraform plan
   - name: 'hashicorp/terraform:latest'
     dir: 'terraform'
     args: [
       'plan',
-      '-var', 'project_id=$PROJECT_ID',
-      '-var', 'image_tag=$COMMIT_SHA'
+      '-var', 'project_id=$PROJECT_ID'
     ]
 
   # Apply Terraform changes
@@ -30,12 +36,9 @@ steps:
     args: [
       'apply',
       '-auto-approve',
-      '-var', 'project_id=$PROJECT_ID',
-      '-var', 'image_tag=$COMMIT_SHA'
+      '-var', 'project_id=$PROJECT_ID'
     ]
 
 images:
   - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:$COMMIT_SHA'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/test-tf/flask-app:latest'
